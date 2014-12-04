@@ -29,21 +29,20 @@ using PyPlot
 include("deformable_mirror.jl")
 
 function plot_dm_influence(actuator_number::Int64)
-  mirror = StackedArrayPiezoelectricDM(6, 0.01, compute_adhoc_influence, 0.15, 1);
-  actuator_positions = compute_actuator_placement(mirror)
-  plot_size::Int64 = 500
-  mirror_radius::Float64 = 0.05
+  mirror = StackedArrayPiezoelectricDM(6, 0.05, 0.01, compute_adhoc_influence, 0.15, 0.0, 0.1);
+  plot_size = 400
   influence_matrix = Array(Float64, plot_size, plot_size)
-
+  mirror_radius = mirror.radius
+  actuator_positions = mirror.actuator_positions
   for i=1:plot_size, j=1:plot_size
     pixel_position = compute_pixel_position(i, j, mirror_radius, plot_size)
-    influence_matrix[i, j] = mirror.influenceFunction(actuator_number,
-                                                      actuator_positions,
-                                                      pixel_position,
-                                                      mirror)
+    influence_matrix[i, j] = mirror.influence_function(mirror,
+                                                       actuator_number,
+                                                       pixel_position)
+
   end
-  pcolor(influence_matrix)
-  #plot_surface([1:plot_size], [1:plot_size], influence_matrix, cmap=get_cmap("coolwarm"))
+  #pcolor(influence_matrix)
+  plot_surface([1:plot_size], [1:plot_size], influence_matrix, cmap=get_cmap("coolwarm"))
 end
 
 function compute_pixel_position(i, j, mirror_radius, plot_size)
