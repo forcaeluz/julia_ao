@@ -142,7 +142,7 @@ function compute_adhoc_influence(mirror::StackedArrayPiezoelectricDM,
   if (tmp_x <= 1) && (tmp_y <= 1)
     returnValue = tmp
   end
-  return returnValue
+  return returnValue * mirror.micron_per_volt
 end
 
 
