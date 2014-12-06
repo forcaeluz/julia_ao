@@ -22,8 +22,9 @@
 ########################################################
 
 using Base.Test
+using julia_ao
 
-include("../src/deformable_mirror.jl")
+#include("../src/deformable_mirror.jl")
 
 # First test: Test actuator placement algorithm.
 # Two things are tested: The number of actuators that are on the mirror and their position.
