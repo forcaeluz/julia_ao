@@ -29,6 +29,7 @@ include("../src/deformable_mirror.jl")
 # Two things are tested: The number of actuators that are on the mirror and their position.
 #
 function test_actuator_positioning()
+  println("Testing Actuator Positioning")
   configuration = PztDmConfiguration(6, 0.027, 0.01, compute_adhoc_influence, 0.15, 0.0, 0.1)
   mirror = PztDm(configuration)
 
@@ -54,6 +55,7 @@ end
 # over the whole mirror. Note that the output is not checked. The tests
 # only garantee that no errors are thrown with the call to the influence function.
 function test_influence_function(influence_function::Function)
+  println("Testing influence function: ", influence_function)
   configuration = PztDmConfiguration(6, 0.027, 0.01, influence_function, 0.15, 0.0, 0.1)
   mirror = PztDm(configuration)
   actuator_number = 1
@@ -80,6 +82,7 @@ end
 
 test_actuator_positioning()
 test_influence_function(compute_adhoc_influence)
+test_influence_function(compute_adhoc_no_coupling_influence)
 test_influence_function(compute_gaussian_influence)
 test_influence_function(compute_modified_gaussian_influence)
 test_influence_function(compute_double_gaussian_influence)
