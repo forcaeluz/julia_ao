@@ -1,4 +1,4 @@
-module AdaptiveOptics
+module julia_ao
 
 # package code goes here
 

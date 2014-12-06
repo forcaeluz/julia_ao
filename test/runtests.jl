@@ -1,4 +1,4 @@
-using AdaptiveOptics
+using julia_ao
 using Base.Test
 
 # write your own tests here
