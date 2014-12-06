@@ -141,12 +141,16 @@ end
 # Note that the influence functions compute a gain. To compute the actual
 # DM shape, use the compute_shape function.
 # The algorithm comes from Yao, so I refer back to it for explanation.
-function compute_adhoc_no_coupling_influence(actuator_position, read_position, pitch)
-  actuator_x = actuator_position[1]
-  actuator_y = actuator_position[2]
+function compute_adhoc_no_coupling_influence(mirror::PztDm,
+                                 actuator::Int64,
+                                 read_position::Array{Float64})
+
+  actuator_x = mirror.actuator_positions[actuator, 2]
+  actuator_y = mirror.actuator_positions[actuator, 3]
+  pitch = mirror.configuration.inter_actuator_distance
   read_x = read_position[1]
   read_y = read_position[2]
-
+  returnValue = 0
   tmp_x = pitch - abs(read_x - actuator_x)
   tmp_y = pitch - abs(read_y - actuator_y)
   tmp = tmp_x * tmp_y
@@ -160,29 +164,52 @@ end
 # Reimplemented from the Yao sync * gaussian influence function
 #
 #
-function compute_sync_influence(actuator_position, read_position, pitch, coupling)
+function compute_sync_influence(mirror::PztDm,
+                                 actuator::Int64,
+                                 read_position::Array{Float64})
+  returnValue::Float64 = 0
 
+  return returnValue
 end
 
 
 #
 #
 #
-function compute_gaussian_influence(actuator_position, read_position, pitch, coupling)
+function compute_gaussian_influence(mirror::PztDm,
+                                 actuator::Int64,
+                                 read_position::Array{Float64})
   const alpha::Float64 = 1.5
-  x_distance = actuator_position[1] - read_position[1]
-  y_distance = actuator_position[2] - read_position[2]
+  x_distance = mirror.actuator_positions[actuator, 2] - read_position[1]
+  y_distance = mirror.actuator_positions[actuator, 3] - read_position[2]
   distance = sqrt( x_distance^2 + y_distance^2 )
+  coupling = mirror.configuration.nearest_neighbours_coupling
+  pitch = mirror.configuration.inter_actuator_distance
   return exp( log(coupling) * ( distance / pitch )^alpha )
 end
 
 #
 #
 #
-function compute_double_gaussian_influence(actuator_position, read_position, pitch, coupling)
+function compute_double_gaussian_influence(mirror::PztDm,
+                                 actuator::Int64,
+                                 read_position::Array{Float64})
+  returnValue::Float64 = 0
 
+  return returnValue
 end
 
-function compute_modified_gaussian_influence(actuator_position, read_position)
+function compute_modified_gaussian_influence(mirror::PztDm,
+                                 actuator::Int64,
+                                 read_position::Array{Float64})
+  returnValue::Float64 = 0
+
+  return returnValue
+end
+
+function compute_dm_shape(mirror::PztDm, commands::Array{Float64},
+                          position)
+  x = pos[1]
+  y = pos[2]
 
 end
