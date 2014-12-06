@@ -33,47 +33,48 @@ include("utilities.jl")
 #  - influenceFunction: Function to be used to compute a single actuator influence
 #  - interActuatorCoupling: Coupling percentage between nearest neighboors actuators.
 #  - thresholdResponse: TODO: Explain.
-type StackedArrayPiezoelectricDM
-  actuatorsInDiameter::Int64
-  interActuatorDistance::Float64
-  influenceFunction::Function
-  interActuatorCoupling::Float64
-  thresholdResponse::Float64
+type PztDmConfiguration
+  actuators_in_diameter::Int64
+  radius::Float64
+  inter_actuator_distance::Float64
+  influence_function::Function
+  nearest_neighbours_coupling::Float64
+  diagonal_neighbours_coupling::Float64
+  micron_per_volt::Float64
+end
+
+type PztDm
+  configuration::PztDmConfiguration
+  actuator_positions::Array
+  PztDm(config::PztDmConfiguration) = initialize_stacked_array_mirror( new(config) )
+end
+
+function initialize_stacked_array_mirror(mirror::PztDm)
+  actuator_positions = compute_actuator_placement(mirror.configuration)
+  valid_actuators = remove_actuators_outside_mirror(actuator_positions, mirror.configuration.radius)
+  mirror.actuator_positions = valid_actuators;
+  return mirror
 end
 
 
-# Function to compute the influence Matrix for a StackedArrayPiezoelectricDM.
-# The implementation is based on Yao, and other literature. Check documentation
-# pages for it.
-# This function is not necessary yet, and depends on more than only the mirror.
-function compute_influence_matrix(mirror::StackedArrayPiezoelectricDM)
-  actuator_positions = compute_actuator_placement(mirror)
-  radius = mirror.actuatorsInDiameter * mirror.interActuatorDistance / 2.0
-  actuator_positions = remove_actuators_outside_mirror(actuator_positions, radius)
-end
-
-
-#
-#
-#
-function compute_actuator_placement(mirror::StackedArrayPiezoelectricDM)
-  number_act_x = mirror.actuatorsInDiameter
-  pitch = mirror.interActuatorDistance
+function compute_actuator_placement(mirror::PztDmConfiguration)
+  number_act_x = mirror.actuators_in_diameter
+  pitch = mirror.inter_actuator_distance
   radius = (number_act_x - 1) * pitch / 2;
   # Array with data for each actuator
   # Actuator number, x pos, y pos, distance to center
-  actuatorCenters = Array(Float64, number_act_x^2, 4)
+  actuator_centers = Array(Float64, number_act_x^2, 4)
   for i = 1:number_act_x, j = 1:number_act_x
     actuator_number = j + (i - 1)*number_act_x
     x_distance = (j - 1) * pitch  - radius
     y_distance = (i - 1) * pitch  - radius
     abs_distance = sqrt(x_distance^2 + y_distance ^2)
-    actuatorCenters[actuator_number, 1] = actuator_number
-    actuatorCenters[actuator_number, 2] = x_distance
-    actuatorCenters[actuator_number, 3] = y_distance
-    actuatorCenters[actuator_number, 4] = abs_distance
+    actuator_centers[actuator_number, 1] = actuator_number
+    actuator_centers[actuator_number, 2] = x_distance
+    actuator_centers[actuator_number, 3] = y_distance
+    actuator_centers[actuator_number, 4] = abs_distance
   end
-  return actuatorCenters
+  return actuator_centers
 end
 
 
@@ -103,12 +104,13 @@ end
 # Note that the influence functions compute a gain. To compute the actual
 # DM shape, use the compute_shape function.
 # The algorithm comes from Yao, so I refer back to it for explanation.
-function compute_adhoc_influence(actuator::Int64,
-                                 actuator_positions::Array{Float64},
-                                 read_position::Array{Float64},
-                                 mirror::StackedArrayPiezoelectricDM)
-  coupling::Float64 = mirror.interActuatorCoupling
-  pitch::Float64 = mirror.interActuatorDistance
+function compute_adhoc_influence(mirror::PztDm,
+                                 actuator::Int64,
+                                 read_position::Array{Float64}
+                                 )
+  coupling::Float64 = mirror.configuration.nearest_neighbours_coupling
+  pitch::Float64 = mirror.configuration.inter_actuator_distance
+  actuator_positions = mirror.actuator_positions
   returnValue::Float64 = 0
   read_x = read_position[1]
   read_y = read_position[2]
@@ -131,7 +133,7 @@ function compute_adhoc_influence(actuator::Int64,
   if (tmp_x <= 1) && (tmp_y <= 1)
     returnValue = tmp
   end
-  return returnValue
+  return returnValue * mirror.configuration.micron_per_volt
 end
 
 
@@ -139,12 +141,16 @@ end
 # Note that the influence functions compute a gain. To compute the actual
 # DM shape, use the compute_shape function.
 # The algorithm comes from Yao, so I refer back to it for explanation.
-function compute_adhoc_no_coupling_influence(actuator_position, read_position, pitch)
-  actuator_x = actuator_position[1]
-  actuator_y = actuator_position[2]
+function compute_adhoc_no_coupling_influence(mirror::PztDm,
+                                 actuator::Int64,
+                                 read_position::Array{Float64})
+
+  actuator_x = mirror.actuator_positions[actuator, 2]
+  actuator_y = mirror.actuator_positions[actuator, 3]
+  pitch = mirror.configuration.inter_actuator_distance
   read_x = read_position[1]
   read_y = read_position[2]
-
+  returnValue = 0
   tmp_x = pitch - abs(read_x - actuator_x)
   tmp_y = pitch - abs(read_y - actuator_y)
   tmp = tmp_x * tmp_y
@@ -158,29 +164,52 @@ end
 # Reimplemented from the Yao sync * gaussian influence function
 #
 #
-function compute_sync_influence(actuator_position, read_position, pitch, coupling)
+function compute_sync_influence(mirror::PztDm,
+                                 actuator::Int64,
+                                 read_position::Array{Float64})
+  returnValue::Float64 = 0
 
+  return returnValue
 end
 
 
 #
 #
 #
-function compute_gaussian_influence(actuator_position, read_position, pitch, coupling)
+function compute_gaussian_influence(mirror::PztDm,
+                                 actuator::Int64,
+                                 read_position::Array{Float64})
   const alpha::Float64 = 1.5
-  x_distance = actuator_position[1] - read_position[1]
-  y_distance = actuator_position[2] - read_position[2]
+  x_distance = mirror.actuator_positions[actuator, 2] - read_position[1]
+  y_distance = mirror.actuator_positions[actuator, 3] - read_position[2]
   distance = sqrt( x_distance^2 + y_distance^2 )
+  coupling = mirror.configuration.nearest_neighbours_coupling
+  pitch = mirror.configuration.inter_actuator_distance
   return exp( log(coupling) * ( distance / pitch )^alpha )
 end
 
 #
 #
 #
-function compute_double_gaussian_influence(actuator_position, read_position, pitch, coupling)
+function compute_double_gaussian_influence(mirror::PztDm,
+                                 actuator::Int64,
+                                 read_position::Array{Float64})
+  returnValue::Float64 = 0
 
+  return returnValue
 end
 
-function compute_modified_gaussian_influence(actuator_position, read_position)
+function compute_modified_gaussian_influence(mirror::PztDm,
+                                 actuator::Int64,
+                                 read_position::Array{Float64})
+  returnValue::Float64 = 0
+
+  return returnValue
+end
+
+function compute_dm_shape(mirror::PztDm, commands::Array{Float64},
+                          position)
+  x = pos[1]
+  y = pos[2]
 
 end
