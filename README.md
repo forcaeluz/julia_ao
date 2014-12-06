@@ -5,7 +5,7 @@ Adaptive Optics package for Julia.
 
 Current Build status:
 
-[![Build Status](https://travis-ci.org/forcaeluz/julia-ao.svg?branch=master)](https://travis-ci.org/forcaeluz/julia-ao)
+[![Build Status](https://travis-ci.org/forcaeluz/julia_ao.svg?branch=master)](https://travis-ci.org/forcaeluz/julia_ao)
 
 Current Status
 ==============
