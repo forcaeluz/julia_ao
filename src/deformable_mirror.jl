@@ -21,7 +21,6 @@
 # SOFTWARE.
 ########################################################
 
-
 # Necessry files.
 include("utilities.jl")
 
