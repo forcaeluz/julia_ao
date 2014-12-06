@@ -108,8 +108,8 @@ function compute_adhoc_influence(mirror::PztDm,
                                  actuator::Int64,
                                  read_position::Array{Float64}
                                  )
-  coupling::Float64 = mirror.nearest_neighbours_coupling
-  pitch::Float64 = mirror.inter_actuator_distance
+  coupling::Float64 = mirror.configuration.nearest_neighbours_coupling
+  pitch::Float64 = mirror.configuration.inter_actuator_distance
   actuator_positions = mirror.actuator_positions
   returnValue::Float64 = 0
   read_x = read_position[1]
@@ -133,7 +133,7 @@ function compute_adhoc_influence(mirror::PztDm,
   if (tmp_x <= 1) && (tmp_y <= 1)
     returnValue = tmp
   end
-  return returnValue * mirror.micron_per_volt
+  return returnValue * mirror.configuration.micron_per_volt
 end
 
 
