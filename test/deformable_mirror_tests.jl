@@ -80,6 +80,7 @@ function compute_pixel_position(i, j, mirror_radius, plot_size)
   return [x, y]
 end
 
+println("Testing deformable_mirror.jl")
 test_actuator_positioning()
 test_influence_function(compute_adhoc_influence)
 test_influence_function(compute_adhoc_no_coupling_influence)
