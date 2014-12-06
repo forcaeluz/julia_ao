@@ -3,15 +3,6 @@ compiler:
   - clang
 notifications:
   email: false
-env:
-  matrix:
-    - JULIAVERSION="juliareleases"
-    - JULIAVERSION="julianightlies"
-before_install:
-  - add-apt-repository ppa:staticfloat/julia-deps -y
-  - add-apt-repository ppa:staticfloat/${JULIAVERSION} -y
-  - apt-get update -qq -y
-  - apt-get install libpcre3-dev julia -y
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+
 script:
   - julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.test("AdaptiveOptics")'
