@@ -33,7 +33,7 @@ include("utilities.jl")
 #  - influenceFunction: Function to be used to compute a single actuator influence
 #  - interActuatorCoupling: Coupling percentage between nearest neighboors actuators.
 #  - thresholdResponse: TODO: Explain.
-type StackedArrayPiezoelectricDM
+type PztDmConfiguration
   actuators_in_diameter::Int64
   radius::Float64
   inter_actuator_distance::Float64
@@ -41,32 +41,23 @@ type StackedArrayPiezoelectricDM
   nearest_neighbours_coupling::Float64
   diagonal_neighbours_coupling::Float64
   micron_per_volt::Float64
-  actuator_positions::Array
-  StackedArrayPiezoelectricDM(actuators_in_diameter::Int64,
-                              radius::Float64,
-                              inter_actuator_distance::Float64,
-                              influence_function::Function,
-                              nearest_neighbours_coupling::Float64,
-                              diagonal_neighbours_coupling::Float64,
-                              micron_per_volt::Float64,
-                              ) = initialize_stacked_array_mirror(new(actuators_in_diameter,
-                                        radius,
-                                        inter_actuator_distance,
-                                        influence_function,
-                                        nearest_neighbours_coupling,
-                                        diagonal_neighbours_coupling,
-                                        micron_per_volt))
 end
 
-function initialize_stacked_array_mirror(mirror::StackedArrayPiezoelectricDM)
-  actuator_positions = compute_actuator_placement(mirror)
-  valid_actuators = remove_actuators_outside_mirror(actuator_positions, mirror.radius)
+type PztDm
+  configuration::PztDmConfiguration
+  actuator_positions::Array
+  PztDm(config::PztDmConfiguration) = initialize_stacked_array_mirror( new(config) )
+end
+
+function initialize_stacked_array_mirror(mirror::PztDm)
+  actuator_positions = compute_actuator_placement(mirror.configuration)
+  valid_actuators = remove_actuators_outside_mirror(actuator_positions, mirror.configuration.radius)
   mirror.actuator_positions = valid_actuators;
   return mirror
 end
 
 
-function compute_actuator_placement(mirror::StackedArrayPiezoelectricDM)
+function compute_actuator_placement(mirror::PztDmConfiguration)
   number_act_x = mirror.actuators_in_diameter
   pitch = mirror.inter_actuator_distance
   radius = (number_act_x - 1) * pitch / 2;
@@ -113,7 +104,7 @@ end
 # Note that the influence functions compute a gain. To compute the actual
 # DM shape, use the compute_shape function.
 # The algorithm comes from Yao, so I refer back to it for explanation.
-function compute_adhoc_influence(mirror::StackedArrayPiezoelectricDM,
+function compute_adhoc_influence(mirror::PztDm,
                                  actuator::Int64,
                                  read_position::Array{Float64}
                                  )
