@@ -28,30 +28,61 @@ include("../src/deformable_mirror.jl")
 # First test: Test actuator placement algorithm.
 # Two things are tested: The number of actuators that are on the mirror and their position.
 #
-configuration = PztDmConfiguration(6, 0.027, 0.01, compute_adhoc_influence, 0.15, 0.0, 0.1)
-mirror = PztDm(configuration)
+function test_actuator_positioning()
+  configuration = PztDmConfiguration(6, 0.027, 0.01, compute_adhoc_influence, 0.15, 0.0, 0.1)
+  mirror = PztDm(configuration)
 
-@test size(mirror.actuator_positions) == (24, 4)
-for i=1:24
-  original_index = mirror.actuator_positions[i, 1]
-  x_index = (original_index % 6)
-  y_index = div(original_index, 6)
-  if x_index != 0
-    x_index = x_index - 1
-  else
-    x_index = 5
-    y_index -= 1
+  @test size(mirror.actuator_positions) == (24, 4)
+  for i=1:24
+    original_index = mirror.actuator_positions[i, 1]
+    x_index = (original_index % 6)
+    y_index = div(original_index, 6)
+    if x_index != 0
+      x_index = x_index - 1
+    else
+      x_index = 5
+      y_index -= 1
+    end
+    @test mirror.actuator_positions[i, 4] <= 0.027
+    @test_approx_eq mirror.actuator_positions[i, 2] (x_index * 0.01 - 0.025)
+    @test_approx_eq mirror.actuator_positions[i, 3] (y_index * 0.01 - 0.025)
   end
-  @test mirror.actuator_positions[i, 4] <= 0.027
-  @test_approx_eq mirror.actuator_positions[i, 2] (x_index * 0.01 - 0.025)
-  @test_approx_eq mirror.actuator_positions[i, 3] (y_index * 0.01 - 0.025)
 end
 
 
 # Second test: Compute the influence function for an actuator
-# over the whole mirror.
+# over the whole mirror. Note that the output is not checked. The tests
+# only garantee that no errors are thrown with the call to the influence function.
+function test_influence_function(influence_function::Function)
+  configuration = PztDmConfiguration(6, 0.027, 0.01, influence_function, 0.15, 0.0, 0.1)
+  mirror = PztDm(configuration)
+  actuator_number = 1
+  plot_size = 400
+  influence_matrix = Array(Float64, plot_size, plot_size)
+  mirror_radius = mirror.configuration.radius
+  actuator_positions = mirror.actuator_positions
+  for i=1:plot_size, j=1:plot_size
+    pixel_position = compute_pixel_position(i, j, mirror_radius, plot_size)
+    influence_matrix[i, j] = mirror.configuration.influence_function(mirror,
+                                                         actuator_number,
+                                                         pixel_position)
 
+  end
+end
 
+function compute_pixel_position(i, j, mirror_radius, plot_size)
+  plot_center::Float64 = (plot_size / 2.0) + 0.5
+  pixel_size = ( mirror_radius * 2 ) / plot_size
+  x::Float64 = ( plot_center - j ) * pixel_size
+  y::Float64 = ( plot_center - i ) * pixel_size
+  return [x, y]
+end
+
+test_actuator_positioning()
+test_influence_function(compute_adhoc_influence)
+test_influence_function(compute_gaussian_influence)
+test_influence_function(compute_modified_gaussian_influence)
+test_influence_function(compute_double_gaussian_influence)
 # Third test: Test the multiple modelling functions, with and without coupling
 #
 
