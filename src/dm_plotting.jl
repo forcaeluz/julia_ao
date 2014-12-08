@@ -29,14 +29,14 @@ using PyPlot
 include("deformable_mirror.jl")
 
 function plot_dm_influence(actuator_number::Int64)
-  mirror = StackedArrayPiezoelectricDM(6, 0.05, 0.01, compute_adhoc_influence, 0.15, 0.0, 0.1);
+  configuration = PztDmConfiguration(6, 0.05, 0.01, compute_adhoc_influence, 0.15, 0.0, 0.1);
+  mirror = PztDm(configuration)
   plot_size = 400
   influence_matrix = Array(Float64, plot_size, plot_size)
-  mirror_radius = mirror.radius
-  actuator_positions = mirror.actuator_positions
+  mirror_radius = configuration.radius
   for i=1:plot_size, j=1:plot_size
     pixel_position = compute_pixel_position(i, j, mirror_radius, plot_size)
-    influence_matrix[i, j] = mirror.influence_function(mirror,
+    influence_matrix[i, j] = mirror.configuration.influence_function(mirror,
                                                        actuator_number,
                                                        pixel_position)
 
