@@ -22,8 +22,9 @@
 ########################################################
 
 using Base.Test
+using julia_ao
 
-include("../src/deformable_mirror.jl")
+#include("../src/deformable_mirror.jl")
 
 # First test: Test actuator placement algorithm.
 # Two things are tested: The number of actuators that are on the mirror and their position.
@@ -80,6 +81,7 @@ function compute_pixel_position(i, j, mirror_radius, plot_size)
   return [x, y]
 end
 
+println("Testing deformable_mirror.jl")
 test_actuator_positioning()
 test_influence_function(compute_adhoc_influence)
 test_influence_function(compute_adhoc_no_coupling_influence)
