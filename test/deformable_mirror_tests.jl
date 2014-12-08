@@ -24,9 +24,8 @@
 using Base.Test
 using julia_ao
 
-#include("../src/deformable_mirror.jl")
 
-# First test: Test actuator placement algorithm.
+# Test actuator placement algorithm.
 # Two things are tested: The number of actuators that are on the mirror and their position.
 #
 function test_actuator_positioning()
@@ -52,7 +51,7 @@ function test_actuator_positioning()
 end
 
 
-# Second test: Compute the influence function for an actuator
+# Compute the influence function for an actuator
 # over the whole mirror. Note that the output is not checked. The tests
 # only garantee that no errors are thrown with the call to the influence function.
 function test_influence_function(influence_function::Function)
@@ -88,10 +87,5 @@ test_influence_function(compute_adhoc_no_coupling_influence)
 test_influence_function(compute_gaussian_influence)
 test_influence_function(compute_modified_gaussian_influence)
 test_influence_function(compute_double_gaussian_influence)
-# Third test: Test the multiple modelling functions, with and without coupling
-#
 
 
-
-# Fourth test:
-#
