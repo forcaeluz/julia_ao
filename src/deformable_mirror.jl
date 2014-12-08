@@ -194,8 +194,16 @@ function compute_double_gaussian_influence(mirror::PztDm,
                                  actuator::Int64,
                                  read_position::Array{Float64})
   returnValue::Float64 = 0
-
-  return returnValue
+  const omega1::Float64 = 2.0
+  const omega2::Float64 = -1.0
+  const sigma1::Float64 = 0.54
+  const sigma2::Float64 = 0.85
+  x_distance = mirror.actuator_positions[actuator, 2] - read_position[1]
+  y_distance = mirror.actuator_positions[actuator, 3] - read_position[2]
+  gaussian1 = (omega1 / (2*pi*sigma1^2)) * exp( - (x_distance^2 + y_distance^2) / (2 * sigma1^2))
+  gaussian2 = (omega2 / (2*pi*sigma2^2)) * exp( - (x_distance^2 + y_distance^2) / (2 * sigma2^2))
+  returnValue = gaussian1 + gaussian2
+  return returnValue * mirror.configuration.micron_per_volt
 end
 
 function compute_modified_gaussian_influence(mirror::PztDm,
