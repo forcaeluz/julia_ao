@@ -72,6 +72,15 @@ function test_influence_function(influence_function::Function)
   end
 end
 
+
+function test_compute_dm_shape()
+  println("Testing dm shape computation")
+  configuration = PztDmConfiguration(6, 0.027, 0.01, compute_adhoc_influence, 0.15, 0.0, 0.1)
+  mirror = PztDm(configuration)
+  commands = ones(24, 1)
+  compute_dm_shape(mirror, commands, [0,0])
+end
+
 function compute_pixel_position(i, j, mirror_radius, plot_size)
   plot_center::Float64 = (plot_size / 2.0) + 0.5
   pixel_size = ( mirror_radius * 2 ) / plot_size
@@ -87,5 +96,5 @@ test_influence_function(compute_adhoc_no_coupling_influence)
 test_influence_function(compute_gaussian_influence)
 test_influence_function(compute_modified_gaussian_influence)
 test_influence_function(compute_double_gaussian_influence)
-
+test_compute_dm_shape()
 
