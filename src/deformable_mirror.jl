@@ -214,9 +214,13 @@ function compute_modified_gaussian_influence(mirror::PztDm,
   return returnValue
 end
 
-function compute_dm_shape(mirror::PztDm, commands::Array{Float64},
+function compute_dm_shape(mirror::PztDm,
+                          commands::Array{Float64},
                           position)
-  x = pos[1]
-  y = pos[2]
+  result::Float64 = 0
+  for i = 1:length(commands)
+    result += mirror.configuration.influence_function(mirror, i, position) * commands[i]
+  end
 
+  return result
 end
