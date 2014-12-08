@@ -217,6 +217,10 @@ end
 function compute_dm_shape(mirror::PztDm,
                           commands::Array{Float64},
                           position)
+  result::Float64 = 0
+  for i = 1:length(commands)
+    result += mirror.configuration.influence_function(mirror, i, position) * commands[i]
+  end
 
-
+  return result
 end
