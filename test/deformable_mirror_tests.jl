@@ -79,7 +79,7 @@ function test_compute_dm_shape()
   mirror = PztDm(configuration)
   commands = ones(24, 1)
   result::Float64 = 0.0
-  result = compute_dm_shape(mirror, commands, [0,0])
+  result = compute_dm_shape(mirror, commands, [0.0,0.0])
 end
 
 function compute_pixel_position(i, j, mirror_radius, plot_size)
