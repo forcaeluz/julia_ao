@@ -29,7 +29,7 @@ using PyPlot
 include("deformable_mirror.jl")
 
 function plot_dm_influence(actuator_number::Int64)
-  configuration = PztDmConfiguration(6, 0.05, 0.01, compute_adhoc_influence, 0.15, 0.0, 0.1);
+  configuration = PztDmConfiguration(6, 0.026, 0.01, compute_adhoc_influence, 0.15, 0.0, 0.1);
   mirror = PztDm(configuration)
   plot_size = 400
   influence_matrix = Array(Float64, plot_size, plot_size)
@@ -42,7 +42,23 @@ function plot_dm_influence(actuator_number::Int64)
 
   end
   #pcolor(influence_matrix)
-  plot_surface([1:plot_size], [1:plot_size], influence_matrix, cmap=get_cmap("coolwarm"))
+  xpixels
+  surf(influence_matrix, cmap=get_cmap("coolwarm"))
+end
+
+function plot_dm_shape()
+  configuration = PztDmConfiguration(6, 0.026, 0.01, compute_adhoc_influence, 0.15, 0.0, 0.1);
+  mirror = PztDm(configuration)
+  plot_size = 400
+  influence_matrix = Array(Float64, plot_size, plot_size)
+  mirror_radius = configuration.radius
+  commands = ones(24, 1)
+  for i=1:plot_size, j=1:plot_size
+    pixel_position = compute_pixel_position(i, j, mirror_radius, plot_size)
+    influence_matrix[i, j] = compute_dm_shape(mirror, commands, pixel_position)
+  end
+  #pcolor(influence_matrix)
+  surf(influence_matrix, cmap=get_cmap("coolwarm"))
 end
 
 function compute_pixel_position(i, j, mirror_radius, plot_size)
