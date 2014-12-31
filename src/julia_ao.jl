@@ -40,7 +40,8 @@ export PztDmConfiguration,
 
 export Screen,
         create_centered_screen,
-        create_screen
+        create_screen,
+        interpolate_to_screen!
 
 export ShackHartmanConfig,
         ShackHartmanSensor,

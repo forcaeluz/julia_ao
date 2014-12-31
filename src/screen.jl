@@ -20,6 +20,9 @@
 # SOFTWARE.
 ########################################################
 
+using Grid
+
+
 """
   Screen: This is a type that holds image or phase information, and the location of the
   information in the real world.
@@ -64,3 +67,14 @@ function create_centered_screen(physical_size::Array{Float64, 1},
   screen = create_screen(x_centers, y_centers, pixel_size, resolution, data)
 end
 
+"""
+"""
+function interpolate_to_screen!(interpolated::Screen, original::Screen)
+  x = original.x_pxl_centers
+  y = original.y_pxl_centers
+  data = original.data
+  interpolator = CoordInterpGrid((x,y), data, BCnearest, InterpQuadratic)
+  new_x = interpolated.x_pxl_centers
+  new_y = interpolated.y_pxl_centers
+  interpolated.data = interpolator[new_x, new_y]
+end

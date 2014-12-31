@@ -33,6 +33,18 @@ function test_screen_creation()
   @test size(screen.data) == (200,200)
 end
 
+function test_screen_interpolation()
+  print_with_color(:blue, "Testing screen interpolation\n")
+  screen1 = create_centered_screen([0.3e-3, 0.3e-3], [200, 200])
+  screen2 = create_centered_screen([0.3e-3, 0.3e-3], [400, 400])
+  screen1.data = ones(200, 200)
+  interpolate_to_screen!(screen2, screen1)
+  for i = 1:400, j = 1:400
+    @test_approx_eq screen2.data[i, j] 1.0
+  end
+end
+
 print_with_color(:green, "\nTesting ", tested_file, "\n")
 test_screen_creation()
+test_screen_interpolation()
 print_with_color(:green, tested_file, " has been tested \n")
