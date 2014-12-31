@@ -21,8 +21,10 @@
 ########################################################
 
 using Base.Test
-tested_file = "../src/screen.jl"
-include("../src/screen.jl")
+using julia_ao
+
+tested_file = "screen.jl"
+
 
 
 function test_screen_creation()
