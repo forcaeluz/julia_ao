@@ -23,6 +23,7 @@
 
 # Necessry files.
 include("utilities.jl")
+include("geometries.jl")
 
 # This type contains the necessary information for a Stacked Array Piezoelectric DM.
 # The parameters are based on the parameters from Yao. (From November 2014)
@@ -59,20 +60,9 @@ end
 function compute_actuator_placement(mirror::PztDmConfiguration)
   number_act_x = mirror.actuators_in_diameter
   pitch = mirror.inter_actuator_distance
-  radius = (number_act_x - 1) * pitch / 2;
   # Array with data for each actuator
   # Actuator number, x pos, y pos, distance to center
-  actuator_centers = Array(Float64, number_act_x^2, 4)
-  for i = 1:number_act_x, j = 1:number_act_x
-    actuator_number = j + (i - 1)*number_act_x
-    x_distance = (j - 1) * pitch  - radius
-    y_distance = (i - 1) * pitch  - radius
-    abs_distance = sqrt(x_distance^2 + y_distance ^2)
-    actuator_centers[actuator_number, 1] = actuator_number
-    actuator_centers[actuator_number, 2] = x_distance
-    actuator_centers[actuator_number, 3] = y_distance
-    actuator_centers[actuator_number, 4] = abs_distance
-  end
+  actuator_centers = compute_squaregrid_centers(pitch, number_act_x)
   return actuator_centers
 end
 
