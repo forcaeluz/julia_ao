@@ -7,6 +7,10 @@ Current Build status:
 
 [![Build Status](https://travis-ci.org/forcaeluz/julia_ao.svg?branch=master)](https://travis-ci.org/forcaeluz/julia_ao)
 
+Current Test Coverage:
+
+[![Coverage Status](https://coveralls.io/repos/forcaeluz/julia_ao/badge.png?branch=master)](https://coveralls.io/r/forcaeluz/julia_ao?branch=master)
+
 Current Status
 ==============
 
