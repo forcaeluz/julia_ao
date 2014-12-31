@@ -25,6 +25,7 @@ module julia_ao
 
 include("deformable_mirror.jl")
 include("screen.jl")
+include("shack_hartman.jl")
 
 # package code goes here
 export PztDmConfiguration,
@@ -41,4 +42,8 @@ export Screen,
         create_centered_screen,
         create_screen
 
+export ShackHartmanConfig,
+        ShackHartmanSensor,
+        compute_shackhartman_intensities,
+        compute_cog_centroids
 end # module
