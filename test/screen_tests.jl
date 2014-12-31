@@ -20,25 +20,19 @@
 # SOFTWARE.
 ########################################################
 
+using Base.Test
+using julia_ao
 
-module julia_ao
+tested_file = "screen.jl"
 
-include("deformable_mirror.jl")
-include("screen.jl")
 
-# package code goes here
-export PztDmConfiguration,
-        PztDm,
-        compute_adhoc_influence,
-        compute_adhoc_no_coupling_influence,
-        compute_sync_influence,
-        compute_gaussian_influence,
-        compute_double_gaussian_influence,
-        compute_modified_gaussian_influence,
-        compute_dm_shape
 
-export Screen,
-        create_centered_screen,
-        create_screen
+function test_screen_creation()
+  print_with_color(:blue, "Testing create_centered_screen:\n")
+  screen = create_centered_screen([0.3e-3, 0.3e-3],[200, 200])
+  @test size(screen.data) == (200,200)
+end
 
-end # module
+print_with_color(:green, "\nTesting ", tested_file, "\n")
+test_screen_creation()
+print_with_color(:green, tested_file, " has been tested \n")
