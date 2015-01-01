@@ -21,8 +21,6 @@
 # SOFTWARE.
 ########################################################
 
-using PyPlot
-
 include("screen.jl")
 include("geometries.jl")
 
