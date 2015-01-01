@@ -21,6 +21,8 @@
 # SOFTWARE.
 ########################################################
 
+using PyPlot
+
 include("screen.jl")
 include("geometries.jl")
 
@@ -29,20 +31,19 @@ include("geometries.jl")
   Note that this configuration is only for a square sensor with
   a square grid.
   The parameters are:
-  - lenslets_in_width: Number of lenslets in the width
-  - inter_lenslet_distance: Distance between the centers of two lenslets
-  - resolution: Number of pixels in width for the sensor
-  - focal_length:
-  - lenslet_diameter:
-  - wave_length:
-  - width:
-  - support_factor:
-
+    - lenslets_in_width: Number of lenslets in the width
+    - width: The lenslet array and sensor width
+    - resolution: A square sensor is assumed, so the resolution in both directions
+    - inter_lenslet_distance: Distance between the centers of two lenslets (same row or colum)
+    - lenslet_diameter: Diameter of the lens
+    - focal_length: Focal length of the lens
+    - wave_length: Wavelength of the light we are checking/simulating.
+    - support_factor: Used in the calculation of the front
   Two functions are parameters as well:
-  - compute_intensities: Algorithm to compute the normalized intensity on the CCD based
-  on a phase_screen.
-  - compute_centroid: Computes the centroids for each lenslet based on the intensity readings
-  from the CCD.
+    - compute_intensities: Algorithm to compute the normalized intensity on the CCD based
+      on a phase_screen.
+    - compute_centroid: Computes the centroids for each lenslet based on the intensity readings
+      from the CCD.
 """
 type ShackHartmanConfig
   #Parameters
@@ -51,7 +52,7 @@ type ShackHartmanConfig
   resolution::Int64
   inter_lenslet_distance::Float64
   lenslet_diameter::Float64
-  focal_length::Float64
+  focal_distance::Float64
   wave_length::Float64
   support_factor::Float64
 
@@ -86,20 +87,55 @@ function initialize_shackhartmansensor(sensor::ShackHartmanSensor)
   return sensor
 end
 
+"""
+
+"""
 function computer_lenslet_squaregrid(pitch, lenslet_diam, lenslets_in_width, width)
-  @assert pitch > lenslet_diam
-  @assert width > (lenslets_in_width - 1) * pitch + lenslet_diam
+  @assert pitch >= lenslet_diam
+  @assert width >= (lenslets_in_width - 1) * pitch + lenslet_diam
   centers = compute_squaregrid_centers(pitch, lenslets_in_width)
   return centers;
 end
 
+"""
+
+"""
 function compute_shackhartman_intensities(sensor::ShackHartmanSensor, phase_screen::Screen)
-  # Extract phase information inside lenslet
+  # Prepare
+  image = sensor.intensity_screen
+  dx = image.pxl_size[1]
+  dy = image.pxl_size[2]
+  lenslet_diameter = sensor.configuration.lenslet_diameter
+  lambda = sensor.configuration.wave_length
+  focal_distance = sensor.configuration.focal_distance
+  support_factor = sensor.configuration.support_factor
+  support_screen = create_support_screen(support_factor, lenslet_diameter, phase_screen.pxl_size)
+  filter_screen = create_filter_screen(support_factor, lenslet_diameter, phase_screen.pxl_size)
+  fft_screen = create_fft_screen(sensor)
+  final_data = zeros(200, 200)
+  for i = 1:size(sensor.lenslet_positions)[1]
+    # Extract phase information inside lenslet
+    x_position = sensor.lenslet_positions[i, 2]
+    y_position = sensor.lenslet_positions[i, 3]
 
-  # Compute FFT
+    phase_plate = extract_phaseplate([x_position, y_position],
+                       lenslet_diameter, phase_screen)
 
-  # Intensity
+    interpolate_to_screen!(support_screen, phase_plate)
 
+    Uin = exp(im .* support_screen.data)
+    Ulb = Uin .* filter_screen.data
+    Uln = dx .* dy .* fftshift(fft(Ulb))
+
+    fft_screen = create_fft_screen(sensor)
+    fft_screen.data = abs2(Uln)
+    fft_screen.x_pxl_centers = fft_screen.x_pxl_centers .+  x_position
+    fft_screen.y_pxl_centers = fft_screen.y_pxl_centers .+  y_position
+    interpolate_to_screen!(image, fft_screen)
+    final_data = final_data + image.data
+  end
+  image.data = final_data ./ maximum(final_data)
+  return image
 end
 
 function compute_cog_centroids(sensor::ShackHartmanSensor, intensity_screen::Screen)
@@ -109,7 +145,57 @@ end
 """
 
 """
-function extract_phaseplate()
+function extract_phaseplate(lens_center, lenslet_diameter, incomming_screen)
+  start_pos = Array(Float64, 2)
+  end_pos = Array(Float64, 2)
+  step = incomming_screen.pxl_size
+  radius = lenslet_diameter / 2
+  start_pos = lens_center .- radius
+  end_pos = lens_center .+ radius
 
+  plate = create_screen(start_pos, end_pos, step)
+  interpolate_to_screen!(plate, incomming_screen)
+  return plate
+end
 
+function create_support_screen(support_factor, lenslet_diameter, pixel_size)
+  support_radius = lenslet_diameter * support_factor / 2
+  support_start = [-support_radius, -support_radius]
+  support_end = [support_radius + pixel_size[1] / 2, support_radius + pixel_size[2] / 2]
+  support_screen = create_screen(support_start, support_end, pixel_size)
+  return support_screen
+end
+
+function create_filter_screen(support_factor, lenslet_diameter, pixel_size)
+  radius = lenslet_diameter / 2
+  screen = create_support_screen(support_factor, lenslet_diameter, pixel_size)
+  for i = 1:length(screen.x_pxl_centers), j = 1:length(screen.y_pxl_centers)
+    x = screen.x_pxl_centers[i]
+    y = screen.x_pxl_centers[j]
+    distance = sqrt(x^2 + y^2)
+    if distance < radius
+      screen.data[i, j] = 1
+    end
+  end
+  return screen
+end
+
+"""
+
+"""
+function create_fft_screen(sensor::ShackHartmanSensor)
+  lambda = sensor.configuration.wave_length
+  focal_distance = sensor.configuration.focal_distance
+  support_factor = sensor.configuration.support_factor
+  lenslet_diameter = sensor.configuration.lenslet_diameter
+  support_diameter = support_factor * lenslet_diameter
+  pixel_size = sensor.intensity_screen.pxl_size
+  xfft_limit = (lambda * focal_distance / pixel_size[1]) / 2
+  yfft_limit = (lambda * focal_distance / pixel_size[2]) / 2
+  dfft = lambda * focal_distance / support_diameter
+  fft_start = [-xfft_limit, -yfft_limit]
+  fft_end = [xfft_limit + dfft/2, yfft_limit + dfft/2]
+  fft_step = [dfft, dfft]
+  fft_screen = create_screen(fft_start, fft_end, fft_step)
+  return fft_screen
 end
