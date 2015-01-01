@@ -50,6 +50,16 @@ function create_screen(x_centers::FloatRange, y_centers::FloatRange,
   return screen
 end
 
+function create_screen(start_position::Array{Float64}, end_position::Array{Float64},
+                       step::Array{Float64})
+  x_centers = start_position[1]:step[1]:end_position[1]
+  y_centers = start_position[2]:step[2]:end_position[2]
+  data_size = [length(x_centers), length(y_centers)]
+  data = zeros(data_size[1], data_size[2])
+  screen = create_screen(x_centers, y_centers, step, data_size, data)
+  return screen
+end
+
 """
   Function to create a "clean" screen, based on physical properties. The center
   of the screen is position (0,0).
