@@ -25,14 +25,15 @@ include("screen.jl")
 include("geometries.jl")
 
 """
-  Configuration parameters for a ShackHartmanSensor.
+  Configuration parameters for a Shack-Hartmann Sensor.
   Note that this configuration is only for a square sensor with
   a square grid.
   The parameters are:
     - lenslets_in_width: Number of lenslets in the width
     - width: The lenslet array and sensor width
     - resolution: A square sensor is assumed, so the resolution in both directions
-    - inter_lenslet_distance: Distance between the centers of two lenslets (same row or colum)
+    - inter_lenslet_distance: Distance between the centers of two lenslets (same row or
+      colum)
     - lenslet_diameter: Diameter of the lens
     - focal_length: Focal length of the lens
     - wave_length: Wavelength of the light we are checking/simulating.
@@ -40,10 +41,10 @@ include("geometries.jl")
   Two functions are parameters as well:
     - compute_intensities: Algorithm to compute the normalized intensity on the CCD based
       on a phase_screen.
-    - compute_centroid: Computes the centroids for each lenslet based on the intensity readings
-      from the CCD.
+    - compute_centroid: Computes the centroids for each lenslet based on the intensity
+      readings from the CCD.
 """
-type ShackHartmanConfig
+type ShackHartmannConfig
   #Parameters
   lenslets_in_width::Int64
   width::Float64
@@ -53,40 +54,46 @@ type ShackHartmanConfig
   focal_distance::Float64
   wave_length::Float64
   support_factor::Float64
-
   #Functions
   compute_intensities::Function
   compute_centroid::Function
 end
 
 """
-
+ The Shack-Hartmann Sensor object itself.
+ It contains the configuration, geometry information and an intensity screen, containing
+ the image obtained from the image. From the image the slopes can be calculated.
 """
-type ShackHartmanSensor
+type ShackHartmannSensor
   #Parameters
-  configuration::ShackHartmanConfig
+  configuration::ShackHartmannConfig
   lenslet_positions::Array
   intensity_screen::Screen
-  ShackHartmanSensor(configuration::ShackHartmanConfig) = initialize_shackhartmansensor( new(configuration ) )
+  ShackHartmannSensor(configuration::ShackHartmannConfig) =
+    initialize_shackhartmansensor( new(configuration ) )
 end
 
 """
-
+  Function to initialize the sensor, based on the configuration object given as
+  parameter to the function.
 """
-function initialize_shackhartmansensor(sensor::ShackHartmanSensor)
+function initialize_shackhartmansensor(sensor::ShackHartmannSensor)
   # Compute lenslet positions
   pitch = sensor.configuration.inter_lenslet_distance
   lenslet_diam = sensor.configuration.lenslet_diameter
   lenslets_in_width = sensor.configuration.lenslets_in_width
   width = sensor.configuration.width
-  resolution = sensor.configuration.resolution;
-  sensor.lenslet_positions = computer_lenslet_squaregrid(pitch, lenslet_diam, lenslets_in_width, width)
-  sensor.intensity_screen = create_centered_screen([width, width], [resolution, resolution])
+  resolution = sensor.configuration.resolution
+  sensor.lenslet_positions = computer_lenslet_squaregrid(pitch, lenslet_diam,
+                                                         lenslets_in_width, width)
+  sensor.intensity_screen = create_centered_screen([width, width],
+                                                   [resolution, resolution])
   return sensor
 end
 
 """
-
+  Function that returns the geometry information about the lenslet array. It makes some
+  "sanity" checks and then compute the geometry.
 """
 function computer_lenslet_squaregrid(pitch, lenslet_diam, lenslets_in_width, width)
   @assert pitch >= lenslet_diam
@@ -96,9 +103,12 @@ function computer_lenslet_squaregrid(pitch, lenslet_diam, lenslets_in_width, wid
 end
 
 """
-
+  Function to compute the image obtained from a SH sensor. The implementation is based on
+  the implementation from PyAo and Yao.
+  The algorithm basically uses a numerical approximation of the Fraunhofer Approximation
+  to compute the PSF for each lenslet.
 """
-function compute_shackhartman_intensities(sensor::ShackHartmanSensor, phase_screen::Screen)
+function compute_shackhartman_intensities(sensor::ShackHartmannSensor, phase_screen::Screen)
   # Prepare
   image = sensor.intensity_screen
   dx = image.pxl_size[1]
@@ -107,8 +117,10 @@ function compute_shackhartman_intensities(sensor::ShackHartmanSensor, phase_scre
   lambda = sensor.configuration.wave_length
   focal_distance = sensor.configuration.focal_distance
   support_factor = sensor.configuration.support_factor
-  support_screen = create_support_screen(support_factor, lenslet_diameter, phase_screen.pxl_size)
-  filter_screen = create_filter_screen(support_factor, lenslet_diameter, phase_screen.pxl_size)
+  support_screen = create_support_screen(support_factor, lenslet_diameter,
+                                         phase_screen.pxl_size)
+  filter_screen = create_filter_screen(support_factor, lenslet_diameter,
+                                       phase_screen.pxl_size)
   fft_screen = create_fft_screen(sensor)
   final_data = zeros(200, 200)
   for i = 1:size(sensor.lenslet_positions)[1]
@@ -136,7 +148,7 @@ function compute_shackhartman_intensities(sensor::ShackHartmanSensor, phase_scre
   return image
 end
 
-function compute_cog_centroids(sensor::ShackHartmanSensor, intensity_screen::Screen)
+function compute_cog_centroids(sensor::ShackHartmannSensor, intensity_screen::Screen)
 
 end
 
@@ -155,6 +167,7 @@ function extract_phaseplate(lens_center, lenslet_diameter, incomming_screen)
   interpolate_to_screen!(plate, incomming_screen)
   return plate
 end
+
 
 function create_support_screen(support_factor, lenslet_diameter, pixel_size)
   support_radius = lenslet_diameter * support_factor / 2
@@ -181,7 +194,7 @@ end
 """
 
 """
-function create_fft_screen(sensor::ShackHartmanSensor)
+function create_fft_screen(sensor::ShackHartmannSensor)
   lambda = sensor.configuration.wave_length
   focal_distance = sensor.configuration.focal_distance
   support_factor = sensor.configuration.support_factor
