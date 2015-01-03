@@ -43,8 +43,7 @@ export Screen,
         create_screen,
         interpolate_to_screen!
 
-export ShackHartmanConfig,
-        ShackHartmanSensor,
-        compute_shackhartman_intensities,
-        compute_cog_centroids
+export ShackHartmannConfig,
+        ShackHartmannSensor,
+        compute_shackhartmann_intensities
 end # module
