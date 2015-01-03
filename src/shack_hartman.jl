@@ -108,7 +108,7 @@ end
   The algorithm basically uses a numerical approximation of the Fraunhofer Approximation
   to compute the PSF for each lenslet.
 """
-function compute_shackhartman_intensities(sensor::ShackHartmannSensor, phase_screen::Screen)
+function compute_shackhartmann_intensities(sensor::ShackHartmannSensor, phase_screen::Screen)
   # Prepare
   image = sensor.intensity_screen
   dx = image.pxl_size[1]
