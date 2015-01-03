@@ -27,9 +27,17 @@ tested_file = "shack_hartman.jl"
 
 function test_sensor_creation()
   print_with_color(:blue, "Testing shack hartmann sensor creation:\n")
-  config = ShackHartmanConfig(10, 0.4e-2, 200, 10e-6 + 0.3e-3, 0.3e-3, 18e-3,
-                               630e-9, 4, compute_shackhartman_intensities, compute_cog_centroids)
-  sensor = ShackHartmanSensor(config)
+  config = ShackHartmannConfig(10,             # Number of lenslets in the x direction
+                              0.4e-2,
+                              200,
+                              10e-6 + 0.3e-3,
+                              0.3e-3,
+                              18e-3,
+                              630e-9,
+                              4,
+                              compute_shackhartmann_intensities,
+                              compute_shackhartmann_intensities)
+  sensor = ShackHartmannSensor(config)
 end
 
 print_with_color(:green, "\nTesting ", tested_file, "\n")
