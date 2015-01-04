@@ -23,17 +23,17 @@
 using Base.Test
 
 tested_file = "shack_hartman.jl"
-include("../src/shack_hartmann_tests.jl")
+include("../src/shack_hartmann.jl")
 #########################################################################################
 # Test functions
 function test_sensor_creation()
-  print_with_color(:blue, "Testing shack hartmann sensor creation:\n")
+  print_with_color(:blue, "Testing shack hartmann sensor creation\n")
   sensor = create_sensor()
   # To-do: Add oracles
 end
 
 function test_extract_phaseplate()
-  print_with_color(:blue, "Testing extract_phase_plate()\n")
+  print_with_color(:blue, "Testing extract_phase_plate\n")
   sensor = create_sensor()
   phase = create_flat_phase_screen()
   plate = extract_phaseplate(sensor, 1, phase)
@@ -41,13 +41,13 @@ function test_extract_phaseplate()
 end
 
 function test_compute_average_phaseplate_gradients()
-  print_with_color(:blue, "Testing compute_average_phaseplate_gradients()\n")
+  print_with_color(:blue, "Testing compute_average_phaseplate_gradients\n")
   # Create a phase_plate with known gradient
   phase_plate = create_screen([-1.0, -1.0], [1.0, 1.0], [0.1, 0.1])
   for i = 1:length(phase_plate.x_pxl_centers), j = 1:length(phase_plate.y_pxl_centers)
-    phase_plate.data[i, j] = phase_plate.x_pxl_centers[i] + phase_plate.y_pxl_centers[i]
+    phase_plate.data[i, j] = phase_plate.x_pxl_centers[i] + phase_plate.y_pxl_centers[j]
   end
-  (gx, gy) = compute_average_phaseplate_gradients(plate)
+  (gx, gy) = compute_average_phaseplate_gradients(phase_plate)
   @test_approx_eq gx 1.0
   @test_approx_eq gy 1.0
 end
