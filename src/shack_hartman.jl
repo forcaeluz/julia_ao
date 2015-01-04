@@ -156,7 +156,11 @@ end
   of the numerical approximation of the computations.
 """
 function compute_average_phaseplate_gradients(phase_plate::Screen)
-
+  (Gx, Gy) = calculate_2d_gradient(phase_plate.data, phase_plate.pxl_size[1],
+                                   phase_plate.pxl_size[2])
+  gx = mean(Gx)
+  gy = mean(Gy)
+  return gx, gy
 end
 
 """
