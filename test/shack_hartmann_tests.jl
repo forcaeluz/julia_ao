@@ -55,21 +55,11 @@ end
 
 function test_compensate_phaseplate_tiptilt()
   print_with_color(:blue, "Testing compensate_phaseplate_tiptilt!()\n")
-  sensor = create_sensor()
-  phase = create_flat_phase_screen()
-  plate = extract_phaseplate(sensor, 1, phase)
-  [gx, gy] = compute_average_phaseplate_gradients(plate)
-  compensate_phaseplate_tiptilt!(plate, gx, gy)
-  #To-do: Add oracles
+  #To-do: implement
 end
 
 function test_compute_imagelet_intensities()
   print_with_color(:blue, "Testing compute_imagelet_intensities()\n")
-  sensor = create_sensor()
-  phase = create_flat_phase_screen()
-  plate = extract_phaseplate(sensor, 1, phase)
-  [gx, gy] = compute_average_phaseplate_gradients(plate)
-  compensate_phaseplate_tiptilt!(plate, gx, gy)
   #To-do: Implement actual test.
 end
 #########################################################################################
