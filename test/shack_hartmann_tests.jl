@@ -43,11 +43,14 @@ end
 
 function test_compute_average_phaseplate_gradients()
   print_with_color(:blue, "Testing compute_average_phaseplate_gradients()\n")
-  sensor = create_sensor()
-  phase = create_flat_phase_screen()
-  plate = extract_phaseplate(sensor, 1, phase)
+  // Create a phase_plate with known gradient
+  phase_plate = create_screen([-1.0, -1.0], [1.0, 1.0], [0.1, 0.1])
+  for i = 1:length(phase_plate.x_pxl_centers), j = 1:length(phase_plate.y_pxl_centers)
+    phase_plate.data[i, j] = phase_plate.x_pxl_centers[i] + phase_plate.y_pxl_centers[i]
+  end
   [gx, gy] = compute_average_phaseplate_gradients(plate)
-  #To-do: Add oracles
+  @test_approx_eq gx 1.0
+  @test_approx_eq gy 1.0
 end
 
 function test_compensate_phaseplate_tiptilt()
