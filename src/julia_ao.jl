@@ -46,8 +46,12 @@ export Screen,
 
 export ShackHartmannConfig,
         ShackHartmannSensor,
-        compute_shackhartmann_intensities
-
+        compute_shackhartmann_intensities,
+        extract_phaseplate,
+        compute_average_phaseplate_gradients,
+        compensate_phaseplate_tiptilt!,
+        compute_imagelet_intensities,
+        compensate_imagelet_tiptilt!
 export plot_color_screen,
         plot_color_to_web
 

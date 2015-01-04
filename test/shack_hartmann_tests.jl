@@ -21,9 +21,10 @@
 ########################################################
 
 using Base.Test
+using julia_ao
 
 tested_file = "shack_hartman.jl"
-include("../src/shack_hartmann.jl")
+
 #########################################################################################
 # Test functions
 function test_sensor_creation()
