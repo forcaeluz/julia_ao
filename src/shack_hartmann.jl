@@ -207,8 +207,8 @@ function compensate_imagelet_tiptilt!(imagelet::Screen, sensor::ShackHartmannSen
                                       gradient_x::Float64, gradient_y::Float64)
   focal_distance = sensor.configuration.focal_distance
   k = 2 * pi * sensor.configuration.wave_length
-  theta = arctan(gradient_x / k)
-  phi = arctan(gradient_y / k)
+  theta = atan(gradient_x / k)
+  phi = atan(gradient_y / k)
   x_shift = tan(theta) * focal_distance
   y_shift = tan(phi) * focal_distance
 
