@@ -189,6 +189,8 @@ end
 """
 function compute_imagelet_intensities(support_screen::Screen, filter_screen::Screen,
                                       sensor::ShackHartmannSensor)
+  dx = sensor.intensity_screen.pxl_size[1]
+  dy = sensor.intensity_screen.pxl_size[1]
   Uin = exp(im .* support_screen.data)
   Ulb = Uin .* filter_screen.data
   Uln = dx .* dy .* fftshift(fft(Ulb))
