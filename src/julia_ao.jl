@@ -25,7 +25,7 @@ module julia_ao
 
 include("deformable_mirror.jl")
 include("screen.jl")
-include("shack_hartman.jl")
+include("shack_hartmann.jl")
 include("plotting.jl")
 
 # package code goes here
