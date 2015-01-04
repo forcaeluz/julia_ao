@@ -43,12 +43,12 @@ end
 
 function test_compute_average_phaseplate_gradients()
   print_with_color(:blue, "Testing compute_average_phaseplate_gradients()\n")
-  // Create a phase_plate with known gradient
+  # Create a phase_plate with known gradient
   phase_plate = create_screen([-1.0, -1.0], [1.0, 1.0], [0.1, 0.1])
   for i = 1:length(phase_plate.x_pxl_centers), j = 1:length(phase_plate.y_pxl_centers)
     phase_plate.data[i, j] = phase_plate.x_pxl_centers[i] + phase_plate.y_pxl_centers[i]
   end
-  [gx, gy] = compute_average_phaseplate_gradients(plate)
+  (gx, gy) = compute_average_phaseplate_gradients(plate)
   @test_approx_eq gx 1.0
   @test_approx_eq gy 1.0
 end
@@ -89,8 +89,8 @@ end
 # Test plan execution
 print_with_color(:green, "\nTesting ", tested_file, "\n")
 test_sensor_creation()
-test_extract_phaseplate()
+#test_extract_phaseplate()
 test_compute_average_phaseplate_gradients()
-test_compensate_phaseplate_tiptilt()
-test_compute_imagelet_intensities()
+#test_compensate_phaseplate_tiptilt()
+#test_compute_imagelet_intensities()
 print_with_color(:green, tested_file, " has been tested \n")
