@@ -26,6 +26,7 @@ module julia_ao
 include("deformable_mirror.jl")
 include("screen.jl")
 include("shack_hartman.jl")
+include("plotting.jl")
 
 # package code goes here
 export PztDmConfiguration,
@@ -46,4 +47,8 @@ export Screen,
 export ShackHartmannConfig,
         ShackHartmannSensor,
         compute_shackhartmann_intensities
+
+export plot_color_screen,
+        plot_color_to_web
+
 end # module
