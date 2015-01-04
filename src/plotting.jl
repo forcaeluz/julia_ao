@@ -38,9 +38,9 @@ function plot_color_screen(screen::Screen)
 end
 
 
-function plot_color_to_web(screen::Screen)
+function plot_color_to_web(screen::Screen, user, key, name)
   # Replace with your own account info.
-  Plotly.signin("Julia-Demo-Account", "hvkrsbg3uj")
+  Plotly.signin(user, key)
   x_start = screen.x_pxl_centers[1] - screen.pxl_size[1]/2
   x_end = screen.x_pxl_centers[end] + screen.pxl_size[1]/2
   y_start = screen.y_pxl_centers[1] - screen.pxl_size[2]/2
@@ -55,7 +55,7 @@ function plot_color_to_web(screen::Screen)
       "type" => "heatmap"
     ]
   ]
-  response = Plotly.plot(data, ["filename" => "screen", "fileopt" => "overwrite"])
+  response = Plotly.plot(data, ["filename" => name, "fileopt" => "overwrite"])
   plot_url = response["url"]
   return plot_url
 end
