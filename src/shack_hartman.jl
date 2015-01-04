@@ -23,6 +23,7 @@
 
 include("screen.jl")
 include("geometries.jl")
+include("utilities.jl")
 
 """
   Configuration parameters for a Shack-Hartmann Sensor.
@@ -109,67 +110,93 @@ end
   to compute the PSF for each lenslet.
 """
 function compute_shackhartmann_intensities(sensor::ShackHartmannSensor, phase_screen::Screen)
+  # Assert the phase screen and image screen dimensions match
+  @assert sensor.intensity_screen.x_pxl_centers == phase_screen.x_pxl_centers
+  @assert sensor.intensity_screen.y_pxl_centers == phase_screen.y_pxl_centers
+
   # Prepare
   image = sensor.intensity_screen
-  dx = image.pxl_size[1]
-  dy = image.pxl_size[2]
-  lenslet_diameter = sensor.configuration.lenslet_diameter
-  lambda = sensor.configuration.wave_length
-  focal_distance = sensor.configuration.focal_distance
-  support_factor = sensor.configuration.support_factor
-  support_screen = create_support_screen(support_factor, lenslet_diameter,
-                                         phase_screen.pxl_size)
-  filter_screen = create_filter_screen(support_factor, lenslet_diameter,
-                                       phase_screen.pxl_size)
-  fft_screen = create_fft_screen(sensor)
-  final_data = zeros(200, 200)
+  support_screen = create_support_screen(sensor)
+  filter_screen = create_filter_screen(sensor)
+
   for i = 1:size(sensor.lenslet_positions)[1]
-    # Extract phase information inside lenslet
-    x_position = sensor.lenslet_positions[i, 2]
-    y_position = sensor.lenslet_positions[i, 3]
-
-    phase_plate = extract_phaseplate([x_position, y_position],
-                       lenslet_diameter, phase_screen)
-
-    interpolate_to_screen!(support_screen, phase_plate)
-
-    Uin = exp(im .* support_screen.data)
-    Ulb = Uin .* filter_screen.data
-    Uln = dx .* dy .* fftshift(fft(Ulb))
-
-    fft_screen = create_fft_screen(sensor)
-    fft_screen.data = abs2(Uln)
-    fft_screen.x_pxl_centers = fft_screen.x_pxl_centers .+  x_position
-    fft_screen.y_pxl_centers = fft_screen.y_pxl_centers .+  y_position
-    interpolate_to_screen!(image, fft_screen)
-    final_data = final_data + image.data
+    # Extract the phase-plate
+    # Compute phase-plate average gradients
+    # Compensate for tip-tilt in phase-plate
+    # Interpolate phase-plate into support screen
+    # Compute intensities in the imagelet-screen
+    # Compensate tip-tilt in imagelet-screen
+    # Interpolate and add imagelet-screen to image-screen
   end
   image.data = final_data ./ maximum(final_data)
   return image
 end
 
-function compute_cog_centroids(sensor::ShackHartmannSensor, intensity_screen::Screen)
-
-end
-
 """
-
+  Extract the phase information from the big screen for the specific lenslet.
 """
-function extract_phaseplate(lens_center, lenslet_diameter, incomming_screen)
+function extract_phaseplate(sensor::ShackHartmannSensor, lens_number::Int64,
+                            phase_screen::Screen)
   start_pos = Array(Float64, 2)
   end_pos = Array(Float64, 2)
-  step = incomming_screen.pxl_size
+  lens_center = sensor.lenslet_positions[lens_number, 2:3]
+
+  step = phase_screen.pxl_size
   radius = lenslet_diameter / 2
   start_pos = lens_center .- radius
   end_pos = lens_center .+ radius
 
   plate = create_screen(start_pos, end_pos, step)
-  interpolate_to_screen!(plate, incomming_screen)
+  interpolate_to_screen!(plate, phase_screen)
   return plate
 end
 
+"""
+  Compute the average gradients. This is used to improve the quality
+  of the numerical approximation of the computations.
+"""
+function compute_average_phaseplate_gradients(phase_plate::Screen)
 
-function create_support_screen(support_factor, lenslet_diameter, pixel_size)
+end
+
+"""
+  Compensates the average tip/tilt in the phase_plate.
+"""
+function compensate_phaseplate_tiptilt!(phase_plate::Screen, gradient_x::Float64, gradient_y::Float64)
+
+end
+
+"""
+  Compute the intensities on the focal plane for a specific lenslet.
+"""
+function compute_imagelet_intensities(support_screen::Screen, filter_screen::Screen,
+                                      sensor::ShackHartmannSensor)
+  Uin = exp(im .* support_screen.data)
+  Ulb = Uin .* filter_screen.data
+  Uln = dx .* dy .* fftshift(fft(Ulb))
+
+  imagelet_screen = create_fft_screen(sensor)
+  imagelet_screen.data = abs2(Uln)
+  return imagelet_screen
+end
+
+"""
+
+"""
+function compensate_imagelet_tiptilt!(imagelet::Screen, sensor::ShackHartmannSensor,
+                                      gradient_x::Float64, gradient_y::Float64)
+
+end
+
+"""
+  Create a support screen. This screen will be used to resample the phase data
+  for each lenslet.
+"""
+function create_support_screen(sensor::ShackHartmannSensor)
+  lenslet_diameter = sensor.configuration.lenslet_diameter
+  support_factor = sensor.configuration.support_factor
+  pixel_size = sensor.intensity_screen.pxl_size
+
   support_radius = lenslet_diameter * support_factor / 2
   support_start = [-support_radius, -support_radius]
   support_end = [support_radius + pixel_size[1] / 2, support_radius + pixel_size[2] / 2]
@@ -177,9 +204,13 @@ function create_support_screen(support_factor, lenslet_diameter, pixel_size)
   return support_screen
 end
 
-function create_filter_screen(support_factor, lenslet_diameter, pixel_size)
-  radius = lenslet_diameter / 2
-  screen = create_support_screen(support_factor, lenslet_diameter, pixel_size)
+"""
+  Create a screen that will be used as a filter for each lenslet. Assuming a circle
+  lenslet.
+"""
+function create_filter_screen(sensor::ShackHartmannSensor)
+  radius = sensor.configuration.lenslet_diameter / 2
+  screen = create_support_screen(sensor)
   for i = 1:length(screen.x_pxl_centers), j = 1:length(screen.y_pxl_centers)
     x = screen.x_pxl_centers[i]
     y = screen.x_pxl_centers[j]
@@ -192,21 +223,22 @@ function create_filter_screen(support_factor, lenslet_diameter, pixel_size)
 end
 
 """
-
+  Creates a screen that will be used to store the image for a single lenslet.
 """
-function create_fft_screen(sensor::ShackHartmannSensor)
+function create_imagelet_screen(sensor::ShackHartmannSensor)
   lambda = sensor.configuration.wave_length
   focal_distance = sensor.configuration.focal_distance
   support_factor = sensor.configuration.support_factor
   lenslet_diameter = sensor.configuration.lenslet_diameter
   support_diameter = support_factor * lenslet_diameter
   pixel_size = sensor.intensity_screen.pxl_size
+
   xfft_limit = (lambda * focal_distance / pixel_size[1]) / 2
   yfft_limit = (lambda * focal_distance / pixel_size[2]) / 2
   dfft = lambda * focal_distance / support_diameter
   fft_start = [-xfft_limit, -yfft_limit]
   fft_end = [xfft_limit + dfft/2, yfft_limit + dfft/2]
   fft_step = [dfft, dfft]
-  fft_screen = create_screen(fft_start, fft_end, fft_step)
-  return fft_screen
+  imagelet_screen = create_screen(fft_start, fft_end, fft_step)
+  return imagelet_screen
 end
