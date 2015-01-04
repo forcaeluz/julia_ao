@@ -195,7 +195,7 @@ function compute_imagelet_intensities(support_screen::Screen, filter_screen::Scr
   Ulb = Uin .* filter_screen.data
   Uln = dx .* dy .* fftshift(fft(Ulb))
 
-  imagelet_screen = create_fft_screen(sensor)
+  imagelet_screen = create_imagelet_screen(sensor)
   imagelet_screen.data = abs2(Uln)
   return imagelet_screen
 end
