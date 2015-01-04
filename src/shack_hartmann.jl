@@ -115,21 +115,29 @@ function compute_shackhartmann_intensities(sensor::ShackHartmannSensor, phase_sc
   @assert sensor.intensity_screen.y_pxl_centers == phase_screen.y_pxl_centers
 
   # Prepare
-  image = sensor.intensity_screen
   support_screen = create_support_screen(sensor)
   filter_screen = create_filter_screen(sensor)
 
   for i = 1:size(sensor.lenslet_positions)[1]
     # Extract the phase-plate
+    phase_plate = extract_phaseplate(sensor, i, phase_screen)
     # Compute phase-plate average gradients
+    (x_grad, y_grad) = compute_average_phaseplate_gradients(phase_plate)
     # Compensate for tip-tilt in phase-plate
+    compensate_phaseplate_tiptilt!(phase_plate, x_grad, y_grad)
     # Interpolate phase-plate into support screen
+    interpolate_to_screen!(support_screen, phase_plate)
     # Compute intensities in the imagelet-screen
+    imagelet = compute_imagelet_intensities(support_screen, filter_screen, sensor)
     # Compensate tip-tilt in imagelet-screen
+    compensate_imagelet_tiptilt!(imagelet, sensor, x_grad, y_grad)
     # Interpolate and add imagelet-screen to image-screen
+    insert_imagelet_intto_image!(sensor, imagelet, i)
   end
-  image.data = final_data ./ maximum(final_data)
-  return image
+  final_image = sensor.intensity_screen.data
+  final_image = final_image ./ maximum(final_image)
+  sensor.intensity_screen.data = final_image
+  return sensor.intensity_screen
 end
 
 """
@@ -137,6 +145,7 @@ end
 """
 function extract_phaseplate(sensor::ShackHartmannSensor, lens_number::Int64,
                             phase_screen::Screen)
+  lenslet_diameter = sensor.configuration.lenslet_diameter
   start_pos = Array(Float64, 2)
   end_pos = Array(Float64, 2)
   lens_center = sensor.lenslet_positions[lens_number, 2:3]
@@ -167,7 +176,12 @@ end
   Compensates the average tip/tilt in the phase_plate.
 """
 function compensate_phaseplate_tiptilt!(phase_plate::Screen, gradient_x::Float64, gradient_y::Float64)
-
+  for i = 1:length(phase_plate.x_pxl_centers), j = 1:length(phase_plate.y_pxl_centers)
+    x_pos = phase_plate.x_pxl_centers[i]
+    y_pos = phase_plate.y_pxl_centers[j]
+    new_data = phase_plate.data[i, j] - (x_pos * gradient_x + y_pos * gradient_y)
+    phase_plate.data[i, j] = new_data
+  end
 end
 
 """
@@ -189,7 +203,26 @@ end
 """
 function compensate_imagelet_tiptilt!(imagelet::Screen, sensor::ShackHartmannSensor,
                                       gradient_x::Float64, gradient_y::Float64)
+  focal_distance = sensor.configuration.focal_distance
+  k = 2 * pi * sensor.configuration.wave_length
+  theta = arctan(gradient_x / k)
+  phi = arctan(gradient_y / k)
+  x_shift = tan(theta) * focal_distance
+  y_shift = tan(phi) * focal_distance
 
+  imagelet.x_pxl_centers = imagelet.x_pxl_centers .+ x_shift
+  imagelet.y_pxl_centers = imagelet.y_pxl_centers .+ y_shift
+end
+
+function insert_imagelet_intto_image!(sensor::ShackHartmannSensor, imagelet::Screen,
+                                      imagelet_number::Int64)
+  image = sensor.intensity_screen
+  old_data = image.data
+  imagelet_center = sensor.lenslet_positions[imagelet_number, 2:3]
+  imagelet.x_pxl_centers = imagelet.x_pxl_centers .+ imagelet_center[1]
+  imagelet.y_pxl_centers = imagelet.y_pxl_centers .+ imagelet_center[2]
+  interpolate_to_screen!(image, imagelet)
+  image.data = image.data + old_data
 end
 
 """

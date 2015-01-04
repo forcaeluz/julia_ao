@@ -29,6 +29,7 @@ include("../src/shack_hartmann.jl")
 function test_sensor_creation()
   print_with_color(:blue, "Testing shack hartmann sensor creation\n")
   sensor = create_sensor()
+
   # To-do: Add oracles
 end
 
@@ -37,7 +38,9 @@ function test_extract_phaseplate()
   sensor = create_sensor()
   phase = create_flat_phase_screen()
   plate = extract_phaseplate(sensor, 1, phase)
-  # To-do: Add oracles
+  # Check if size of the plate is as expected.
+  @test_approx_eq plate.x_pxl_centers -7.7e-4:7.7e-6:-4.7e-4
+  @test_approx_eq plate.y_pxl_centers -7.7e-4:7.7e-6:-4.7e-4
 end
 
 function test_compute_average_phaseplate_gradients()
@@ -54,7 +57,15 @@ end
 
 function test_compensate_phaseplate_tiptilt()
   print_with_color(:blue, "Testing compensate_phaseplate_tiptilt!()\n")
-  #To-do: implement
+  phase_plate = create_screen([-1.0, -1.0], [1.0, 1.0], [0.1, 0.1])
+  for i = 1:length(phase_plate.x_pxl_centers), j = 1:length(phase_plate.y_pxl_centers)
+    phase_plate.data[i, j] = phase_plate.x_pxl_centers[i] + phase_plate.y_pxl_centers[j]
+  end
+  compensate_phaseplate_tiptilt!(phase_plate, 1.0, 1.0)
+
+  for i = 1:length(phase_plate.x_pxl_centers), j = 1:length(phase_plate.y_pxl_centers)
+    @test_approx_eq phase_plate.data[i, j] 0
+  end
 end
 
 function test_compute_imagelet_intensities()
@@ -64,7 +75,7 @@ end
 #########################################################################################
 # Support functions
 function create_sensor()
-  config = ShackHartmannConfig(5, 0.4e-2, 200, 10e-6 + 0.3e-3, 0.3e-3, 18e-3, 630e-9, 4,
+  config = ShackHartmannConfig(5, 0.00154, 200, 10e-6 + 0.3e-3, 0.3e-3, 18e-3, 630e-9, 4,
                                compute_shackhartmann_intensities,
                                compute_shackhartmann_intensities)
   sensor = ShackHartmannSensor(config)
@@ -72,14 +83,15 @@ function create_sensor()
 end
 
 function create_flat_phase_screen()
-
+  phase_screen = create_centered_screen([0.00154, 0.00154], [200, 200])
+  return phase_screen
 end
 #########################################################################################
 # Test plan execution
 print_with_color(:green, "\nTesting ", tested_file, "\n")
 test_sensor_creation()
-#test_extract_phaseplate()
+test_extract_phaseplate()
 test_compute_average_phaseplate_gradients()
-#test_compensate_phaseplate_tiptilt()
+test_compensate_phaseplate_tiptilt()
 #test_compute_imagelet_intensities()
 print_with_color(:green, tested_file, " has been tested \n")
