@@ -25,6 +25,8 @@ module julia_ao
 
 include("deformable_mirror.jl")
 include("screen.jl")
+include("shack_hartmann.jl")
+include("plotting.jl")
 
 # package code goes here
 export PztDmConfiguration,
@@ -39,6 +41,18 @@ export PztDmConfiguration,
 
 export Screen,
         create_centered_screen,
-        create_screen
+        create_screen,
+        interpolate_to_screen!
+
+export ShackHartmannConfig,
+        ShackHartmannSensor,
+        compute_shackhartmann_intensities,
+        extract_phaseplate,
+        compute_average_phaseplate_gradients,
+        compensate_phaseplate_tiptilt!,
+        compute_imagelet_intensities,
+        compensate_imagelet_tiptilt!
+export plot_color_screen,
+        plot_color_to_web
 
 end # module

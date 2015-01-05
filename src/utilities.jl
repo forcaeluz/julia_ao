@@ -30,3 +30,17 @@ function clip(variable, min, max)
   end
   return returnValue
 end
+
+function calculate_2d_gradient(data::Array{Float64, 2}, dx, dy)
+  gradient_x = zeros(size(data))
+  gradient_y = zeros(size(data))
+
+  for i = 1:size(data)[1]
+    gradient_x[:,i] = gradient(data[:,i], dx)
+  end
+
+  for j = 1:size(data)[2]
+    gradient_y[j,:] = gradient(data[j,:][:], dy)
+  end
+  return gradient_x, gradient_y
+end

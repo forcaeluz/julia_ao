@@ -14,6 +14,6 @@ before_install:
   - sudo apt-get install libpcre3-dev julia -y
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 script:
-  - julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.test("julia_ao", coverage=true)'
+  - julia -e 'Pkg.init(); Pkg.clone(pwd()); Pkg.clone("https://github.com/plotly/Plotly.jl"); Pkg.test("julia_ao", coverage=true)'
 after_success:
     - julia -e 'cd(Pkg.dir("julia_ao")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
