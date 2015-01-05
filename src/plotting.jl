@@ -32,6 +32,7 @@ function plot_color_screen(screen::Screen)
   y_end = screen.y_pxl_centers[end] + screen.pxl_size[2]/2
   x_bounds = x_start:screen.pxl_size[1]:x_end
   y_bounds = y_start:screen.pxl_size[2]:y_end
+  figure()
   plt = pcolor(x_bounds, y_bounds, screen.data)
   colorbar(plt)
   axis([x_start, x_end, y_start, y_end])
