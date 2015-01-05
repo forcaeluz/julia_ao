@@ -1,4 +1,4 @@
 # julia_ao requires the following packages
 Grid
 PyPlot
-Plotly
+#Plotly
