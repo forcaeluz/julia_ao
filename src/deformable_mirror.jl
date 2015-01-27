@@ -24,6 +24,7 @@
 # Necessry files.
 include("utilities.jl")
 include("geometries.jl")
+include("screen.jl")
 
 # This type contains the necessary information for a Stacked Array Piezoelectric DM.
 # The parameters are based on the parameters from Yao. (From November 2014)
@@ -211,6 +212,17 @@ function compute_dm_shape(mirror::PztDm,
   for i = 1:length(commands)
     result += mirror.configuration.influence_function(mirror, i, position) * commands[i]
   end
-
   return result
+end
+
+function compute_mirror_phase_screen(mirror::PztDm, commands::Array{Float64}, screen_size, resolution, wave_length)
+  screen = create_centered_screen(screen_size, resolution)
+
+  for i = 1:length(screen.x_pxl_centers), j = 1:length(screen.y_pxl_centers)
+    position = [ screen.x_pxl_centers[i], screen.y_pxl_centers[j] ]
+    screen.data[i, j] = compute_dm_shape(mirror, commands, position)
+  end
+  screen.data = screen.data .- maximum(screen.data)
+  screen.data = screen.data .* (1e-6 * 2 * pi / wave_length)
+  return screen
 end
