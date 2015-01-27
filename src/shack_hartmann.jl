@@ -39,11 +39,9 @@ include("utilities.jl")
     - focal_length: Focal length of the lens
     - wave_length: Wavelength of the light we are checking/simulating.
     - support_factor: Used in the calculation of the front
-  Two functions are parameters as well:
+  One function is a parameter as well:
     - compute_intensities: Algorithm to compute the normalized intensity on the CCD based
       on a phase_screen.
-    - compute_centroid: Computes the centroids for each lenslet based on the intensity
-      readings from the CCD.
 """
 type ShackHartmannConfig
   #Parameters
@@ -57,7 +55,6 @@ type ShackHartmannConfig
   support_factor::Float64
   #Functions
   compute_intensities::Function
-  compute_centroid::Function
 end
 
 """
