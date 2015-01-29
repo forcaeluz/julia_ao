@@ -77,7 +77,6 @@ end
 # Support functions
 function create_sensor()
   config = ShackHartmannConfig(5, 0.00154, 200, 10e-6 + 0.3e-3, 0.3e-3, 18e-3, 630e-9, 4,
-                               compute_shackhartmann_intensities,
                                compute_shackhartmann_intensities)
   sensor = ShackHartmannSensor(config)
   return sensor
