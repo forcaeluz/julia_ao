@@ -24,8 +24,10 @@
   This file contains the tests for non public functions.
   The main idea is that private functions needs to be tested, but don't need to be made
   available publicly in the package.
+
+  The test files are included in a submodule to avoid conflicts when running private and
+  public tests on the same julia call, as is done in the build process.
 """
 module PrivateTesting
-
 include("shack_hartmann_private.jl")
 end

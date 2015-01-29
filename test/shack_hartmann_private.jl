@@ -63,7 +63,60 @@ end
 
 function test_compute_imagelet_intensities()
   print_with_color(:blue, "Testing compute_imagelet_intensities()\n")
+
   #To-do: Implement actual test.
+end
+
+function test_compensate_imagelet_tiptilt()
+  print_with_color(:blue, "Testing compensate_imagelet_tiptilt!()\n")
+  # To-do: Implement actual test. (Only test shift in positions)
+end
+
+function test_insert_imagelet_into_image()
+  print_with_color(:blue, "Testing insert_imagelet_into_image()\n")
+  # To-do: Implement actual test. (Only test insertion)
+end
+
+function test_create_support_screen()
+  print_with_color(:blue, "Testing create_support_screen()\n")
+  sensor = create_sensor()
+  test_screen = create_support_screen(sensor)
+  @test_approx_eq test_screen.pxl_size [7.7e-6 7.7e-6]
+  @test_approx_eq test_screen.x_pxl_centers -0.6e-3:7.7e-6:0.60335e-3
+  @test_approx_eq test_screen.y_pxl_centers -0.6e-3:7.7e-6:0.60335e-3
+  @test size(test_screen.data) == (157, 157)
+end
+
+function test_create_filter_screen()
+  print_with_color(:blue, "Testing create_filter_screen()\n")
+  sensor = create_sensor()
+  test_screen = create_filter_screen(sensor)
+  @test_approx_eq test_screen.pxl_size [7.7e-6 7.7e-6]
+  @test_approx_eq test_screen.x_pxl_centers -0.6e-3:7.7e-6:0.60335e-3
+  @test_approx_eq test_screen.y_pxl_centers -0.6e-3:7.7e-6:0.60335e-3
+  @test size(test_screen.data) == (157, 157)
+  radius = 0.15e-3
+
+  for i = 1:length(test_screen.x_pxl_centers), j = 1:length(test_screen.y_pxl_centers)
+    x = test_screen.x_pxl_centers[i]
+    y = test_screen.x_pxl_centers[j]
+    distance = sqrt(x^2 + y^2)
+    if distance < radius
+      @test test_screen.data[i, j] == 1
+    else
+      @test test_screen.data[i, j] == 0
+    end
+  end
+end
+
+function test_create_imagelet_screen()
+  print_with_color(:blue, "Testing create_imagelet_screen()\n")
+  sensor = create_sensor()
+  test_screen = create_imagelet_screen(sensor)
+  @test_approx_eq test_screen.pxl_size [9.45e-6 9.45e-6]
+  @test_approx_eq test_screen.x_pxl_centers -0.73636363636e-3:9.45e-6:(0.736e-3+4.725e-6)
+  @test_approx_eq test_screen.y_pxl_centers -0.73636363636e-3:9.45e-6:(0.736e-3+4.725e-6)
+  @test size(test_screen.data) == (157, 157)
 end
 
 #########################################################################################
@@ -93,4 +146,7 @@ test_extract_phaseplate()
 test_compute_average_phaseplate_gradients()
 test_compensate_phaseplate_tiptilt()
 #test_compute_imagelet_intensities()
-print_with_color(:green, tested_file, " has been tested \n")
+test_create_support_screen()
+test_create_filter_screen()
+test_create_imagelet_screen()
+print_with_color(:green, "File: ", tested_file, " has been tested \n")

@@ -27,51 +27,31 @@ tested_file = "shack_hartman.jl"
 
 #########################################################################################
 # Test functions
+"""
+  This function tests if the sensor can be created, and if the parameters result in the
+  correct mirror properties.
+"""
 function test_sensor_creation()
   print_with_color(:blue, "Testing shack hartmann sensor creation\n")
   sensor = create_sensor()
-
   # To-do: Add oracles
 end
 
-function test_extract_phaseplate()
-  print_with_color(:blue, "Testing extract_phase_plate\n")
-  sensor = create_sensor()
-  phase = create_flat_phase_screen()
-  plate = extract_phaseplate(sensor, 1, phase)
-  # Check if size of the plate is as expected.
-  @test_approx_eq plate.x_pxl_centers -7.7e-4:7.7e-6:-4.7e-4
-  @test_approx_eq plate.y_pxl_centers -7.7e-4:7.7e-6:-4.7e-4
+"""
+  This function tests if the right failure occurs when the mirror parameters are not
+  correctly filled in.
+"""
+function test_invalid_sensor_creation()
+  print_with_color(:blue, "Testing invalid shack hartmann sensor creation\n")
+  # To-do: Add test code.
 end
 
-function test_compute_average_phaseplate_gradients()
-  print_with_color(:blue, "Testing compute_average_phaseplate_gradients\n")
-  # Create a phase_plate with known gradient
-  phase_plate = create_screen([-1.0, -1.0], [1.0, 1.0], [0.1, 0.1])
-  for i = 1:length(phase_plate.x_pxl_centers), j = 1:length(phase_plate.y_pxl_centers)
-    phase_plate.data[i, j] = phase_plate.x_pxl_centers[i] + phase_plate.y_pxl_centers[j]
-  end
-  (gx, gy) = compute_average_phaseplate_gradients(phase_plate)
-  @test_approx_eq gx 1.0
-  @test_approx_eq gy 1.0
-end
-
-function test_compensate_phaseplate_tiptilt()
-  print_with_color(:blue, "Testing compensate_phaseplate_tiptilt!()\n")
-  phase_plate = create_screen([-1.0, -1.0], [1.0, 1.0], [0.1, 0.1])
-  for i = 1:length(phase_plate.x_pxl_centers), j = 1:length(phase_plate.y_pxl_centers)
-    phase_plate.data[i, j] = phase_plate.x_pxl_centers[i] + phase_plate.y_pxl_centers[j]
-  end
-  compensate_phaseplate_tiptilt!(phase_plate, 1.0, 1.0)
-
-  for i = 1:length(phase_plate.x_pxl_centers), j = 1:length(phase_plate.y_pxl_centers)
-    @test_approx_eq phase_plate.data[i, j] 0
-  end
-end
-
-function test_compute_imagelet_intensities()
-  print_with_color(:blue, "Testing compute_imagelet_intensities()\n")
-  #To-do: Implement actual test.
+"""
+  Tests the light intensity for each pixel in the CCD.
+"""
+function test_intensity_computation()
+  print_with_color(:blue, "Testing intensity computation for flat screen\n")
+  # To-do: Add test code.
 end
 #########################################################################################
 # Support functions
@@ -90,8 +70,5 @@ end
 # Test plan execution
 print_with_color(:green, "\nTesting ", tested_file, "\n")
 test_sensor_creation()
-test_extract_phaseplate()
-test_compute_average_phaseplate_gradients()
-test_compensate_phaseplate_tiptilt()
-#test_compute_imagelet_intensities()
-print_with_color(:green, tested_file, " has been tested \n")
+test_invalid_sensor_creation()
+print_with_color(:green, "File: ", tested_file, " has been tested \n")
