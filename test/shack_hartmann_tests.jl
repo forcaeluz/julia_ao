@@ -53,7 +53,7 @@ function test_intensity_computation()
   print_with_color(:blue, "Testing intensity computation for flat screen\n")
   sensor = create_sensor()
   phase = create_flat_phase_screen()
-  compute_shackhartmann_intensities(sensor, phase)
+  result = compute_shackhartmann_intensities(sensor, phase)
 end
 #########################################################################################
 # Support functions
