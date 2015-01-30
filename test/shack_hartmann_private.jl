@@ -62,19 +62,26 @@ function test_compensate_phaseplate_tiptilt()
 end
 
 function test_compute_imagelet_intensities()
-  print_with_color(:blue, "Testing compute_imagelet_intensities()\n")
-
+  print_with_color(:yellow, "Testing compute_imagelet_intensities()\n")
   #To-do: Implement actual test.
 end
 
 function test_compensate_imagelet_tiptilt()
   print_with_color(:blue, "Testing compensate_imagelet_tiptilt!()\n")
-  # To-do: Implement actual test. (Only test shift in positions)
+  sensor = create_sensor()
+  screen = create_centered_screen([0.308e-4, 0.308e-4],[40, 40])
+  compensate_imagelet_tiptilt!(screen, sensor, 0.1, 0.2)
+  @test_approx_eq screen.x_pxl_centers ((-1.5015e-5:7.7e-7:1.501501e-5) + 1.804817055e-10)
+  @test_approx_eq screen.y_pxl_centers ((-1.5015e-5:7.7e-7:1.501501e-5) + 3.609634109e-10)
 end
 
 function test_insert_imagelet_into_image()
   print_with_color(:blue, "Testing insert_imagelet_into_image()\n")
-  # To-do: Implement actual test. (Only test insertion)
+  sensor = create_sensor()
+  imagelet = create_centered_screen([3.08e-4, 3.08e-4],[40, 40])
+  insert_imagelet_intto_image!(sensor, imagelet, 1)
+  # To-do: Add oracles. For now the only check is if the call does not return any errors.
+  # This test should be data-driven.
 end
 
 function test_create_support_screen()
@@ -145,7 +152,9 @@ print_with_color(:green, "\nTesting ", tested_file, "\n")
 test_extract_phaseplate()
 test_compute_average_phaseplate_gradients()
 test_compensate_phaseplate_tiptilt()
-#test_compute_imagelet_intensities()
+test_compute_imagelet_intensities()
+test_compensate_imagelet_tiptilt()
+test_insert_imagelet_into_image()
 test_create_support_screen()
 test_create_filter_screen()
 test_create_imagelet_screen()
