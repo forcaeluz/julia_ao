@@ -29,3 +29,4 @@
   public tests on the same julia call, as is done in the build process.
 """
 include("shack_hartmann_private.jl")
+include("centroiding_private.jl")
