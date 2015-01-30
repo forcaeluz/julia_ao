@@ -73,4 +73,5 @@ end
 print_with_color(:green, "\nTesting ", tested_file, "\n")
 test_sensor_creation()
 test_invalid_sensor_creation()
+test_intensity_computation()
 print_with_color(:green, "File: ", tested_file, " has been tested \n")
