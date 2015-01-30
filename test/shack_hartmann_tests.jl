@@ -51,7 +51,9 @@ end
 """
 function test_intensity_computation()
   print_with_color(:blue, "Testing intensity computation for flat screen\n")
-  # To-do: Add test code.
+  sensor = create_sensor()
+  phase = create_flat_phase_screen()
+  sensor.configuration.compute_intensities(sensor, phase)
 end
 #########################################################################################
 # Support functions
