@@ -67,10 +67,10 @@ end
 function create_centered_screen(physical_size::Array{Float64, 1},
                                 resolution::Array{Int64, 1})
   pixel_size = physical_size ./ resolution
-  x_start = -(physical_size[1] / 2 - pixel_size[1] / 2);
-  x_end = (physical_size[1] / 2 - pixel_size[1] / 2);
-  y_start = -(physical_size[2] / 2 - pixel_size[2] / 2);
-  y_end = (physical_size[2] / 2 - pixel_size[2] / 2);
+  x_start = -(physical_size[1] / 2 - pixel_size[1] / 2)
+  x_end = (physical_size[1] / 2 - pixel_size[1] / 2) + (pixel_size[1]/1e5)
+  y_start = -(physical_size[2] / 2 - pixel_size[2] / 2)
+  y_end = (physical_size[2] / 2 - pixel_size[2] / 2) + (pixel_size[2]/1e5)
   x_centers = x_start:pixel_size[1]:x_end
   y_centers = y_start:pixel_size[2]:y_end
   data = zeros(length(x_centers), length(y_centers))
