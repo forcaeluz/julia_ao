@@ -28,6 +28,4 @@
   The test files are included in a submodule to avoid conflicts when running private and
   public tests on the same julia call, as is done in the build process.
 """
-module PrivateTesting
 include("shack_hartmann_private.jl")
-end
