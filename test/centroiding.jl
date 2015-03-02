@@ -43,6 +43,37 @@ function test_calculate_cog_centroids()
   end
 end
 
+function test_calculate_wcog_centroids()
+  print_with_color(:blue, "Testing calculate_wcog_centroids()\n")
+  config = ShackHartmannConfig(5, 0.00154, 200, 10e-6 + 0.3e-3, 0.3e-3, 18e-3, 630e-9, 4,
+                               compute_shackhartmann_intensities)
+  sensor = ShackHartmannSensor(config)
+  phase_screen = create_centered_screen([0.00154, 0.00154], [200, 200])
+  sensor.configuration.compute_intensities(sensor, phase_screen)
+  cog = calculate_wcog_centroids(sensor)
+
+  lenslets = sensor.lenslet_positions
+  for i = 1:size(lenslets)[1]
+    @test_approx_eq_eps cog[i, 1] lenslets[i, 2] 2e-6
+    @test_approx_eq_eps cog[i, 2] lenslets[i, 3] 2e-6
+  end
+end
+
+function test_calculate_iwc_centroids()
+  print_with_color(:blue, "Testing calculate_iwc_centroids()\n")
+  config = ShackHartmannConfig(5, 0.00154, 200, 10e-6 + 0.3e-3, 0.3e-3, 18e-3, 630e-9, 4,
+                               compute_shackhartmann_intensities)
+  sensor = ShackHartmannSensor(config)
+  phase_screen = create_centered_screen([0.00154, 0.00154], [200, 200])
+  sensor.configuration.compute_intensities(sensor, phase_screen)
+  cog = calculate_iwc_centroids(sensor)
+
+  lenslets = sensor.lenslet_positions
+  for i = 1:size(lenslets)[1]
+    @test_approx_eq_eps cog[i, 1] lenslets[i, 2] 2e-6
+    @test_approx_eq_eps cog[i, 2] lenslets[i, 3] 2e-6
+  end
+end
 #########################################################################################
 # Support functions
 
@@ -50,4 +81,6 @@ end
 # Test plan execution
 print_with_color(:green, "\nTesting ", tested_file, "\n")
 test_calculate_cog_centroids()
+test_calculate_wcog_centroids()
+test_calculate_iwc_centroids()
 print_with_color(:green, "File: ", tested_file, " has been tested \n")
