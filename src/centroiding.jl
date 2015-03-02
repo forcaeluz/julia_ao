@@ -28,7 +28,6 @@ include("screen.jl")
 """
 function calculate_slopes(sensor::ShackHartmannSensor, centroids)
   delta = sensor.lenslet_positions[:,2:3] - centroids
-  println(delta)
   slopes = delta ./ sensor.configuration.focal_distance
   return slopes
 end
