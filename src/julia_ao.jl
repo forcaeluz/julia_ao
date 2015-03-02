@@ -26,6 +26,7 @@ module julia_ao
 include("deformable_mirror.jl")
 include("screen.jl")
 include("shack_hartmann.jl")
+include("centroiding.jl")
 
 # package code goes here
 export PztDmConfiguration,
@@ -45,11 +46,11 @@ export Screen,
 
 export ShackHartmannConfig,
         ShackHartmannSensor,
-        compute_shackhartmann_intensities,
-        extract_phaseplate,
-        compute_average_phaseplate_gradients,
-        compensate_phaseplate_tiptilt!,
-        compute_imagelet_intensities,
-        compensate_imagelet_tiptilt!
+        compute_shackhartmann_intensities
+
+export calculate_cog_centroids,
+        calculate_wcog_centroids,
+        calculate_iwc_centroids
+
 
 end # module
