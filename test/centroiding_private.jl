@@ -83,6 +83,21 @@ function test_calculate_iwc_centroids()
     @test_approx_eq_eps cog[i, 2] lenslets[i, 3] 2e-6
   end
 end
+
+function test_calculate_slopes()
+  print_with_color(:blue, "Testing calculate_slopes()\n")
+  config = ShackHartmannConfig(5, 0.00154, 200, 10e-6 + 0.3e-3, 0.3e-3, 18e-3, 630e-9, 4,
+                               compute_shackhartmann_intensities)
+  sensor = ShackHartmannSensor(config)
+  phase_screen = create_centered_screen([0.00154, 0.00154], [200, 200])
+  sensor.configuration.compute_intensities(sensor, phase_screen)
+  cog = calculate_cog_centroids(sensor)
+  slopes = compute_slopes(sensor, cog)
+    for i = 1:25
+    @test_approx_eq_eps slopes[i, 1] 0 2e-4
+    @test_approx_eq_eps slopes[i, 2] 0 2e-4
+  end
+end
 #########################################################################################
 # Support functions
 
@@ -93,4 +108,5 @@ test_calculate_imagelet_cog()
 test_calculate_cog_centroids()
 test_calculate_wcog_centroids()
 test_calculate_iwc_centroids()
+test_calculate_slopes()
 print_with_color(:green, "File: ", tested_file, " has been tested \n")

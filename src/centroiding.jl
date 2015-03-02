@@ -24,6 +24,16 @@ include("shack_hartmann.jl")
 include("screen.jl")
 
 """
+  Compute the slopes for a SH sensor based on the computed centroids.
+"""
+function calculate_slopes(sensor::ShackHartmannSensor, centroids)
+  delta = sensor.lenslet_positions[:,2:3] - centroids
+  println(delta)
+  slopes = delta ./ sensor.configuration.focal_distance
+  return slopes
+end
+
+"""
   Calculates the centroids based on the Center of Gravity algorithm
 """
 function calculate_cog_centroids(sensor::ShackHartmannSensor)
