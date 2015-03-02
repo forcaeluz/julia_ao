@@ -48,6 +48,9 @@ export ShackHartmannConfig,
         ShackHartmannSensor,
         compute_shackhartmann_intensities
 
-export calculate_cog_centroids
+export calculate_cog_centroids,
+        calculate_wcog_centroids,
+        calculate_iwc_centroids
+
 
 end # module
