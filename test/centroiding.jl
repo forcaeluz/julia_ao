@@ -83,7 +83,7 @@ function test_calculate_slopes()
   phase_screen = create_centered_screen([0.00154, 0.00154], [200, 200])
   sensor.configuration.compute_intensities(sensor, phase_screen)
   cog = calculate_cog_centroids(sensor)
-  slopes = compute_slopes(sensor, cog)
+  slopes = calculate_slopes(sensor, cog)
     for i = 1:25
     @test_approx_eq_eps slopes[i, 1] 0 2e-4
     @test_approx_eq_eps slopes[i, 2] 0 2e-4
